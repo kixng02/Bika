@@ -1,0 +1,13 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <h2>Claim Details</h2>
+    <p><strong>ID:</strong> {{ claim.id }}</p>
+    <p><strong>Claim Title:</strong> {{ claim.details }}</p>
+    <p><strong>Status:</strong> {{ claim.status }}</p>
+    <p><strong>Claim Description:</strong> {{ claim.description }}</p>
+    <p><strong>User:</strong> {{ claim.user.username }}</p>
+    <img src="{{ claim.claim_image.url }}" alt="{{ claim.details }} Image" width="200">
+</div>
+{% endblock %}

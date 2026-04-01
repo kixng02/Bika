@@ -1,0 +1,86 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+  #map { width: 100%; height: calc(100vh - 200px); min-height: 500px; border-radius: 0 0 12px 12px; }
+
+  /* Popups */
+  .maplibregl-popup-content { border-radius: 10px; padding: 14px 16px; font-family: 'Lato', sans-serif; min-width: 180px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+  .popup-title { font-weight: 700; font-size: 14px; color: #1b4332; margin-bottom: 4px; }
+  .popup-sub   { font-size: 12px; color: #5a7a61; line-height: 1.6; }
+
+  /* Legend */
+  .map-legend {
+    position: absolute; bottom: 36px; left: 14px; z-index: 10;
+    background: rgba(255,255,255,.95); border-radius: 10px;
+    padding: 10px 14px; font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    pointer-events: none;
+  }
+  .map-legend .legend-title { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #1b4332; margin-bottom: 7px; }
+  .map-legend .legend-row   { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; color: #374151; }
+  .map-legend .dot          { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+</style>
+
+<script>document.getElementById('pageTitle').textContent = 'Map';</script>
+
+<!-- Quick-action cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <a href="{% url 'wildlife:client_new_claim' %}" style="text-decoration:none;">
+      <div class="stat-card" style="cursor:pointer;">
+        <div class="stat-icon green"><i class="fa fa-plus"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:16px;">New Claim</div>
+          <div class="stat-label">Report wildlife damage</div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-4">
+    <a href="{% url 'wildlife:client_claims_list' %}" style="text-decoration:none;">
+      <div class="stat-card" style="cursor:pointer;">
+        <div class="stat-icon blue"><i class="fa fa-list"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:16px;">My Claims</div>
+          <div class="stat-label">View claim history</div>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-4">
+    <a href="{% url 'wildlife:client_support' %}" style="text-decoration:none;">
+      <div class="stat-card" style="cursor:pointer;">
+        <div class="stat-icon amber"><i class="fa fa-headset"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:16px;">Support</div>
+          <div class="stat-label">Get help from staff</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Map card -->
+<div class="bika-card" style="position:relative;">
+  <div class="card-header-bar" style="display:flex;justify-content:space-between;align-items:center;">
+    <span><i class="fa fa-map-marked-alt" style="color:var(--green-700);margin-right:8px;"></i>Nature Reserves – South Africa</span>
+    <span id="reserveCount" style="font-size:13px;color:var(--text-muted);font-weight:400;"></span>
+  </div>
+  <div style="position:relative;">
+    <div id="map"></div>
+    <div class="map-legend">
+      <div class="legend-title">Legend</div>
+      <div class="legend-row"><div class="dot" style="background:#2d6a4f;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #2d6a4f;"></div> Nature Reserve</div>
+      <div class="legend-row"><div class="dot" style="background:#74c69d;"></div> Cluster (2–4)</div>
+      <div class="legend-row"><div class="dot" style="background:#40916c;"></div> Cluster (5–19)</div>
+      <div class="legend-row"><div class="dot" style="background:#1b4332;"></div> Cluster (20+)</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="{% static 'assets/js/bika-map.js' %}"></script>
+{% endblock %}

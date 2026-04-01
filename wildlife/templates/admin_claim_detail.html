@@ -1,0 +1,119 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'Claim #{{ claim.id }}';</script>
+
+<div class="mb-3">
+  <a href="{% url 'wildlife:admin_claims_list' %}" style="color:var(--green-700);font-weight:600;font-size:14px;">
+    <i class="fa fa-arrow-left"></i> Back to Claims List
+  </a>
+</div>
+
+<div class="row g-4">
+
+  <!-- Left: claim details + actions -->
+  <div class="col-lg-7">
+    <div class="bika-card">
+      <div class="card-header-bar" style="display:flex;align-items:center;justify-content:space-between;">
+        <span><i class="fa fa-file-alt" style="color:var(--green-700);margin-right:8px;"></i>Claim #{{ claim.id }}</span>
+        {% if claim.status == 'approved' %}
+          <span class="badge-approved"><i class="fa fa-check"></i> Approved</span>
+        {% elif claim.status == 'declined' %}
+          <span class="badge-declined"><i class="fa fa-times"></i> Declined</span>
+        {% else %}
+          <span class="badge-pending"><i class="fa fa-clock"></i> Pending</span>
+        {% endif %}
+      </div>
+      <div class="card-body-pad">
+
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Details</div>
+          <div class="claim-detail-value">{{ claim.details }}</div>
+        </div>
+
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Category</div>
+          <div class="claim-detail-value">{{ claim.claims }}</div>
+        </div>
+
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Submitted by</div>
+          <div class="claim-detail-value">{{ claim.user.get_full_name|default:claim.user.username }}</div>
+        </div>
+
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Date submitted</div>
+          <div class="claim-detail-value">{{ claim.timestamp|date:"d F Y, H:i" }}</div>
+        </div>
+
+        {% if claim.status != 'approved' and claim.status != 'declined' %}
+        <div class="claim-detail-actions">
+          <form method="post" action="{% url 'wildlife:approve_claim' claim.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-bika" style="background:#059669;">
+              <i class="fa fa-check"></i> Approve
+            </button>
+          </form>
+          <form method="post" action="{% url 'wildlife:decline_claim' claim.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-bika danger">
+              <i class="fa fa-times"></i> Decline
+            </button>
+          </form>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: claim image -->
+  <div class="col-lg-5">
+    <div class="bika-card">
+      <div class="card-header-bar">
+        <i class="fa fa-image" style="color:var(--green-700);margin-right:8px;"></i>Claim Image
+      </div>
+      <div class="card-body-pad" style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+        {% if claim.claim_image and claim.claim_image.name != 'images/placeholder_img.jpg' %}
+          <img
+            id="claimImg"
+            src="{{ claim.claim_image.url }}"
+            alt="Claim image"
+            style="width:100%;max-height:360px;object-fit:contain;border-radius:10px;cursor:zoom-in;background:#f0fdf4;"
+            onclick="openLightbox(this.src)"
+          >
+          <a href="{{ claim.claim_image.url }}" download class="btn-bika outline" style="font-size:13px;">
+            <i class="fa fa-download"></i> Download Image
+          </a>
+        {% else %}
+          <div style="width:100%;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--green-50);border-radius:10px;color:var(--text-muted);gap:10px;">
+            <i class="fa fa-image" style="font-size:40px;opacity:.3;"></i>
+            <span style="font-size:13px;">No image attached</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Lightbox overlay -->
+<div id="lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;">
+  <img id="lightboxImg" src="" alt="Full image" style="max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+  <button onclick="closeLightbox()" style="position:absolute;top:20px;right:28px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;"><i class="fa fa-times"></i></button>
+</div>
+
+<script>
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  const lb = document.getElementById('lightbox');
+  lb.style.display = 'flex';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+
+{% endblock %}

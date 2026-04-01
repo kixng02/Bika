@@ -1,0 +1,30 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+    <div class="container">
+        <h2>Approved Claims</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Announcement</th>
+                    <!-- Add other claim details here -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in approved_claims %}
+                    <tr>
+                        <td>{{ claim.id }}</td>
+                        <td><a href="{% url 'wildlife:admin_claim_detail' claim.id %}">{{ claim.details }}</a></td>
+                        <!-- Add other claim details here -->
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="2">No approved claims available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'wildlife:admin_claims_list' %}" class="btn btn-primary">Back to Claims List</a>
+    </div>
+{% endblock %}

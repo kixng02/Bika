@@ -1,0 +1,61 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'All Claims';</script>
+
+<div class="page-actions mb-4">
+  <a href="{% url 'wildlife:pending_claims_page' %}" class="btn-bika outline">
+    <i class="fa fa-clock"></i> Pending
+  </a>
+  <a href="{% url 'wildlife:approved_claims_page' %}" class="btn-bika" style="background:var(--green-700);">
+    <i class="fa fa-check-circle"></i> Approved
+  </a>
+  <a href="{% url 'wildlife:declined_claims_page' %}" class="btn-bika danger">
+    <i class="fa fa-times-circle"></i> Declined
+  </a>
+</div>
+
+<div class="bika-card">
+  <div class="card-header-bar">All Claims</div>
+  <div style="overflow-x:auto;">
+    <table class="bika-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Details</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for claim in claims %}
+          <tr>
+            <td style="color:var(--text-muted);font-size:13px;">{{ claim.id }}</td>
+            <td>
+              <a href="{% url 'wildlife:admin_claim_detail' claim.id %}" style="color:var(--green-700);font-weight:600;">
+                {{ claim.details }}
+              </a>
+            </td>
+            <td>
+              {% if claim.status == 'approved' %}
+                <span class="badge-approved"><i class="fa fa-check"></i> Approved</span>
+              {% elif claim.status == 'declined' %}
+                <span class="badge-declined"><i class="fa fa-times"></i> Declined</span>
+              {% else %}
+                <span class="badge-pending"><i class="fa fa-clock"></i> Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3" style="text-align:center;padding:32px;color:var(--text-muted);">
+              No claims found.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

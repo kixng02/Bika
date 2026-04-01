@@ -1,0 +1,113 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'New Claim';</script>
+
+{% if request.GET.submitted %}
+<div style="max-width:520px;">
+  <div class="bika-card" style="text-align:center;padding:48px 36px;">
+    <div style="width:80px;height:80px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+      <i class="fa fa-check" style="font-size:36px;color:#059669;"></i>
+    </div>
+    <h2 style="font-size:22px;font-weight:700;color:var(--green-900);margin:0 0 10px;">Claim Submitted!</h2>
+    <p style="font-size:14px;color:var(--text-muted);margin:0 0 28px;line-height:1.6;">
+      Your claim has been received and is now <strong>pending review</strong>.<br>
+      Our team will assess it and update you on the outcome.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'wildlife:client_new_claim' %}" class="btn-bika outline">
+        <i class="fa fa-plus"></i> Submit Another
+      </a>
+      <a href="{% url 'wildlife:client_claims_list' %}" class="btn-bika">
+        <i class="fa fa-list"></i> View My Claims
+      </a>
+    </div>
+  </div>
+</div>
+{% else %}
+
+<div style="max-width:600px;">
+  <div class="bika-card">
+    <div class="card-header-bar">Submit a New Claim</div>
+    <div class="card-body-pad">
+
+      <!-- Step indicators -->
+      <div style="display:flex;gap:8px;margin-bottom:24px;">
+        <button id="btn-step-1" class="btn-bika" type="button" onclick="showStep(1)">
+          <i class="fa fa-tag"></i> 1. Type
+        </button>
+        <button id="btn-step-2" class="btn-bika outline" type="button" onclick="showStep(2)">
+          <i class="fa fa-image"></i> 2. Image
+        </button>
+        <button id="btn-step-3" class="btn-bika outline" type="button" onclick="showStep(3)">
+          <i class="fa fa-align-left"></i> 3. Details
+        </button>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Step 1: Claim type -->
+        <div id="step-1">
+          <label class="field-label">Claim Type</label>
+          {{ form.claim }}
+          <div style="background:var(--green-50);border-radius:10px;padding:14px 16px;margin-top:16px;border-left:4px solid var(--green-600);">
+            <div style="font-weight:600;font-size:13px;margin-bottom:6px;color:var(--green-800);">Step 1 – Choose your claim type</div>
+            <div style="font-size:13px;color:var(--text-muted);">Select the category that best describes the wildlife damage you experienced.</div>
+          </div>
+          <button class="btn-bika" type="button" style="margin-top:16px;" onclick="showStep(2)">Next <i class="fa fa-arrow-right"></i></button>
+        </div>
+
+        <!-- Step 2: Image -->
+        <div id="step-2" style="display:none;">
+          <label class="field-label">Evidence Photo</label>
+          {{ form.claim_image }}
+          <div style="background:var(--green-50);border-radius:10px;padding:14px 16px;margin-top:16px;border-left:4px solid var(--green-600);">
+            <div style="font-weight:600;font-size:13px;margin-bottom:6px;color:var(--green-800);">Step 2 – Upload an image</div>
+            <div style="font-size:13px;color:var(--text-muted);">A clear photo of the damage helps your claim get processed faster.</div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;">
+            <button class="btn-bika outline" type="button" onclick="showStep(1)"><i class="fa fa-arrow-left"></i> Back</button>
+            <button class="btn-bika" type="button" onclick="showStep(3)">Next <i class="fa fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 3: Details -->
+        <div id="step-3" style="display:none;">
+          <label class="field-label">Description</label>
+          {{ form.details }}
+          <div style="background:var(--green-50);border-radius:10px;padding:14px 16px;margin-top:16px;border-left:4px solid var(--green-600);">
+            <div style="font-weight:600;font-size:13px;margin-bottom:6px;color:var(--green-800);">Step 3 – Add details</div>
+            <div style="font-size:13px;color:var(--text-muted);">Describe what happened, when, and the extent of the damage.</div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;">
+            <button class="btn-bika outline" type="button" onclick="showStep(2)"><i class="fa fa-arrow-left"></i> Back</button>
+            <button class="btn-bika" type="submit"><i class="fa fa-paper-plane"></i> Submit Claim</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showStep(n) {
+    [1,2,3].forEach(i => {
+      document.getElementById('step-' + i).style.display = (i === n) ? 'block' : 'none';
+      const btn = document.getElementById('btn-step-' + i);
+      btn.className = (i === n) ? 'btn-bika' : 'btn-bika outline';
+    });
+  }
+  showStep(1);
+
+  // Style Django form widgets
+  document.querySelectorAll('#step-1 select, #step-2 input[type=file], #step-3 textarea').forEach(el => {
+    el.classList.add('field-input');
+    if (el.tagName === 'TEXTAREA') el.rows = 5;
+  });
+</script>
+
+{% endif %}
+{% endblock %}

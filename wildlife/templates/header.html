@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bika</title>
+  <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'assets/css/bika.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/print.css' %}" media="print">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<div class="bika-wrap">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="bika-sidebar" id="bikaSidebar">
+
+    <div class="sidebar-logo">
+      {% if user.is_staff %}
+        <a href="{% url 'wildlife:dashboard' %}">
+      {% else %}
+        <a href="{% url 'wildlife:home' %}">
+      {% endif %}
+        <img class="logo-elephant" src="{% static 'assets/img/small_elephant_logo.png' %}" alt="Bika">
+        <img class="logo-text" src="{% static 'assets/img/bika_small.png' %}" alt="Bika">
+      </a>
+    </div>
+
+    <nav>
+      {% if user.is_staff %}
+        <div class="nav-label">Overview</div>
+        <a class="nav-link" href="{% url 'wildlife:dashboard' %}">
+          <i class="fa fa-chart-bar"></i> Dashboard
+        </a>
+
+        <div class="nav-label">Claims</div>
+        <a class="nav-link" href="{% url 'wildlife:admin_claims_list' %}">
+          <i class="fa fa-file-alt"></i> All Claims
+        </a>
+        <a class="nav-link" href="{% url 'wildlife:approved_claims_page' %}">
+          <i class="fa fa-check-circle"></i> Approved
+        </a>
+        <a class="nav-link" href="{% url 'wildlife:declined_claims_page' %}">
+          <i class="fa fa-times-circle"></i> Declined
+        </a>
+        <a class="nav-link" href="{% url 'wildlife:pending_claims_page' %}">
+          <i class="fa fa-clock"></i> Pending
+        </a>
+
+        <div class="nav-label">Communication</div>
+        <a class="nav-link" href="{% url 'wildlife:admin_announcements' %}">
+          <i class="fa fa-bullhorn"></i> Announcements
+        </a>
+        <a class="nav-link" href="{% url 'wildlife:admin_support' %}">
+          <i class="fa fa-headset"></i> Support Tickets
+        </a>
+
+        <div class="nav-label">Community</div>
+        <a class="nav-link" href="{% url 'forum:index2' %}">
+          <i class="fa fa-comments"></i> Forum
+        </a>
+
+      {% else %}
+        <div class="nav-label">Navigation</div>
+        <a class="nav-link" href="{% url 'wildlife:home' %}">
+          <i class="fa fa-map"></i> Map
+        </a>
+        <a class="nav-link" href="{% url 'wildlife:client_claims_list' %}">
+          <i class="fa fa-file-alt"></i> My Claims
+        </a>
+        <a class="nav-link" href="{% url 'wildlife:client_new_claim' %}">
+          <i class="fa fa-plus-circle"></i> New Claim
+        </a>
+
+        <div class="nav-label">Communication</div>
+        <a class="nav-link" href="{% url 'wildlife:client_announcements_list' %}">
+          <i class="fa fa-bullhorn"></i> Announcements
+        </a>
+        <a class="nav-link" href="{% url 'wildlife:client_support' %}">
+          <i class="fa fa-headset"></i> Support
+        </a>
+
+        <div class="nav-label">Community</div>
+        <a class="nav-link" href="{% url 'forum:index2' %}">
+          <i class="fa fa-comments"></i> Forum
+        </a>
+      {% endif %}
+
+      <div class="nav-label">Account</div>
+      <a class="nav-link" href="{% url 'wildlife:profile' %}">
+        <i class="fa fa-user"></i> Profile
+      </a>
+      <a class="nav-link" href="{% url 'wildlife:information' %}">
+        <i class="fa fa-info-circle"></i> Information
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        {% if user.profilePicture %}
+          <img class="user-avatar" src="{{ user.profilePicture.url }}" alt="avatar">
+        {% else %}
+          <img class="user-avatar" src="{% static 'assets/img/profilepic_placeholder.png' %}" alt="avatar">
+        {% endif %}
+        <div>
+          <div class="user-name">{{ user.get_full_name|default:user.username|default:user.email }}</div>
+          <div class="user-role">{% if user.is_staff %}Staff{% else %}Client{% endif %}</div>
+        </div>
+      </div>
+      <form method="post" action="{% url 'wildlife:logout' %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="logout-btn" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
+          <i class="fa fa-sign-out-alt"></i> Sign out
+        </button>
+      </form>
+    </div>
+
+  </aside>
+
+  <!-- ===== Main area ===== -->
+  <div class="bika-main">
+
+    <div class="bika-topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" id="menuToggle"><i class="fa fa-bars"></i></button>
+        <h1 id="pageTitle">Bika</h1>
+      </div>
+    </div>
+
+    <div class="bika-content">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div>
+</div>
+
+<script src="{% static 'assets/bootstrap/js/bootstrap.min.js' %}"></script>
+<script>
+  // Mobile sidebar toggle
+  const toggle = document.getElementById('menuToggle');
+  const sidebar = document.getElementById('bikaSidebar');
+  if (toggle) toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+  // Highlight active nav link
+  document.querySelectorAll('.bika-sidebar nav a.nav-link').forEach(link => {
+    if (link.href === window.location.href) link.classList.add('active');
+  });
+</script>
+{% include "footer.html" %}
+</body>
+</html>

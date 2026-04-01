@@ -1,0 +1,20 @@
+/* print.css */
+
+/* Hide all elements by default */
+body * {
+    display: none;
+}
+
+/* Show the specific div to be printed */
+#divToPrint {
+    display: block;
+}
+
+/* You may also style the print version differently if needed */
+@media print {
+    /* Add print-specific styles here */
+    .divToPrint {
+        display: block;
+    }
+    
+}

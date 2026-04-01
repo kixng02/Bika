@@ -1,0 +1,51 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<nav class="navbar navbar-light navbar-expand-md bg-primary navigation-clean" style="padding: 0px;height: 4em;">
+    <div class="container">
+        <div><a class="navbar-brand" href="#" style="margin-left: 200px;font-weight: 400;">Announcements List</a></div>
+
+    </div>
+</nav>
+<section style="padding-top: 0px;padding-bottom: 50px;">
+    <div class="container">
+        <div class="row" style="padding-top: 30px;padding-left: 15%;padding-right: 15%;">
+
+            <div class="col-md-12">
+                <div class="row"
+                    style="margin-top: 20px;border-radius: 25px;padding: 1.5em;border-width: 1px;border-style: solid;border-bottom-width: 1px;border-bottom-style: solid;">
+
+
+                    <div>
+                        <h4>Announcements</h4>
+
+                    </div>
+
+
+
+                    {% for announcement in announcements %}
+                    <div>
+                        <hr>
+                        <p style="font-size: larger;"><h6>{{ announcement.timestamp }} </h6>{{ announcement.title }} </p>
+                        
+                    </div>
+                    {% empty %}
+                    <div class="warning ">
+                        <td colspan="12"><i class="fa fa-warning"></i>&nbsp; No announcements
+                            available. !!!</td>
+                    </div>
+                    {% endfor %}
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% include "footer.html" %}
+</body>
+
+</html>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'Ticket #{{ ticket.id }}';</script>
+
+<div class="mb-3">
+  <a href="{% url 'wildlife:admin_support' %}" style="color:var(--green-700);font-weight:600;font-size:14px;">
+    <i class="fa fa-arrow-left"></i> Back to Support Tickets
+  </a>
+</div>
+
+<div class="row g-4">
+
+  <!-- Left: ticket info -->
+  <div class="col-lg-7">
+    <div class="bika-card mb-4">
+      <div class="card-header-bar" style="display:flex;align-items:center;justify-content:space-between;">
+        <span><i class="fa fa-headset" style="color:var(--green-700);margin-right:8px;"></i>Ticket #{{ ticket.id }}</span>
+        {% if ticket.status == 'fixed' %}
+          <span class="ticket-badge resolved"><i class="fa fa-check"></i> Resolved</span>
+        {% elif ticket.status == 'assigned' %}
+          <span class="ticket-badge assigned"><i class="fa fa-user-check"></i> Assigned</span>
+        {% else %}
+          <span class="ticket-badge pending"><i class="fa fa-clock"></i> Pending</span>
+        {% endif %}
+      </div>
+      <div class="card-body-pad">
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Subject</div>
+          <div class="claim-detail-value" style="font-weight:600;">{{ ticket.subject }}</div>
+        </div>
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Submitted by</div>
+          <div class="claim-detail-value">{{ ticket.user.get_full_name|default:ticket.user.username }}</div>
+        </div>
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Date</div>
+          <div class="claim-detail-value">{{ ticket.submission_timestamp|date:"d F Y, H:i" }}</div>
+        </div>
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Assigned to</div>
+          <div class="claim-detail-value">
+            {% if ticket.support_officer %}{{ ticket.support_officer.get_full_name|default:ticket.support_officer.username }}{% else %}<span style="color:var(--text-muted);">Unassigned</span>{% endif %}
+          </div>
+        </div>
+        <div style="margin-top:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">Message</div>
+          <div style="background:var(--green-50);border-radius:10px;padding:16px;font-size:14px;line-height:1.7;border:1px solid var(--green-100);">
+            {{ ticket.question_description }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick status actions -->
+    <div class="bika-card mb-4">
+      <div class="card-header-bar"><i class="fa fa-bolt" style="color:var(--green-700);margin-right:8px;"></i>Quick Actions</div>
+      <div class="card-body-pad" style="display:flex;gap:12px;flex-wrap:wrap;">
+        <form method="post" action="{% url 'wildlife:ticket_set_status' ticket.id 'assigned' %}">
+          {% csrf_token %}
+          <button type="submit" class="ticket-action-btn blue" {% if ticket.status == 'assigned' %}disabled{% endif %}>
+            <i class="fa fa-user-check"></i> Assign to me
+          </button>
+        </form>
+        <form method="post" action="{% url 'wildlife:ticket_set_status' ticket.id 'fixed' %}">
+          {% csrf_token %}
+          <button type="submit" class="ticket-action-btn green" {% if ticket.status == 'fixed' %}disabled{% endif %}>
+            <i class="fa fa-check"></i> Mark Resolved
+          </button>
+        </form>
+        <form method="post" action="{% url 'wildlife:ticket_set_status' ticket.id 'pending' %}">
+          {% csrf_token %}
+          <button type="submit" class="ticket-action-btn amber" {% if ticket.status == 'pending' %}disabled{% endif %}>
+            <i class="fa fa-clock"></i> Set Pending
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: reply form -->
+  <div class="col-lg-5">
+    <div class="bika-card">
+      <div class="card-header-bar"><i class="fa fa-reply" style="color:var(--green-700);margin-right:8px;"></i>Reply & Update</div>
+      <div class="card-body-pad">
+        <form method="post">
+          {% csrf_token %}
+          {% for field in form %}
+          <div style="margin-bottom:16px;">
+            <label class="field-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <div style="color:#991b1b;font-size:12px;margin-top:4px;">{{ field.errors.0 }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn-bika" style="width:100%;margin-top:4px;">
+            <i class="fa fa-paper-plane"></i> Save &amp; Send Reply
+          </button>
+        </form>
+        {% if ticket.response %}
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--green-100);">
+          <div style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">Previous Response</div>
+          <div style="background:var(--green-50);border-radius:10px;padding:14px;font-size:13px;line-height:1.6;border:1px solid var(--green-100);">
+            {{ ticket.response }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

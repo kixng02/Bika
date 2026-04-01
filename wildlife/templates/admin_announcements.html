@@ -1,0 +1,397 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'Announcements & Claims';</script>
+
+<style>
+  .tab-btn {
+    padding: 8px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    border: 1.5px solid var(--green-600); background: transparent;
+    color: var(--green-700); cursor: pointer; transition: background .15s, color .15s;
+  }
+  .tab-btn.active { background: var(--green-700); color: #fff; border-color: var(--green-700); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* Modal overlay */
+  .bika-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.45); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .bika-modal-overlay.open { display: flex; }
+  .bika-modal {
+    background: #fff; border-radius: 16px; width: 100%; max-width: 540px;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2); padding: 28px 30px;
+    position: relative;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; color: var(--green-900); margin-bottom: 20px; }
+  .modal-close {
+    position: absolute; top: 16px; right: 18px;
+    background: none; border: none; font-size: 20px; cursor: pointer; color: #9ca3af;
+    line-height: 1;
+  }
+  .modal-close:hover { color: #374151; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+</style>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="bika-alert {% if 'deleted' in message.tags or 'error' in message.tags %}error{% else %}success{% endif %}" style="margin-bottom:16px;">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<!-- Tab switcher -->
+<div style="display:flex;gap:8px;margin-bottom:24px;">
+  <button class="tab-btn active" onclick="switchTab('announcements', this)">
+    <i class="fa fa-bullhorn"></i> Announcements
+  </button>
+  <button class="tab-btn" onclick="switchTab('claims', this)">
+    <i class="fa fa-file-alt"></i> Claims
+    <span style="background:var(--green-100);color:var(--green-800);border-radius:20px;padding:1px 8px;font-size:11px;margin-left:4px;">{{ claims|length }}</span>
+  </button>
+</div>
+
+<!-- ════════════ TAB 1: ANNOUNCEMENTS ════════════ -->
+<div id="tab-announcements" class="tab-pane active">
+  <div class="row g-4">
+
+    <!-- New announcement form -->
+    <div class="col-lg-5">
+      <div class="bika-card">
+        <div class="card-header-bar"><i class="fa fa-plus" style="color:var(--green-700);margin-right:8px;"></i>New Announcement</div>
+        <div class="card-body-pad">
+          <form method="post">
+            {% csrf_token %}
+            <div style="margin-bottom:12px;">
+              <label class="field-label">Title</label>
+              {{ form.title }}
+            </div>
+            <div style="margin-bottom:12px;">
+              <label class="field-label">Content</label>
+              {{ form.content }}
+            </div>
+            <button class="btn-bika" type="submit" style="width:100%;">
+              <i class="fa fa-paper-plane"></i> Post Announcement
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Announcements list -->
+    <div class="col-lg-7">
+      <div class="bika-card">
+        <div class="card-header-bar" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Recent Announcements</span>
+          <span style="font-size:13px;color:var(--text-muted);font-weight:400;">{{ announcements|length }} total</span>
+        </div>
+        <div class="card-body-pad" style="padding-top:8px;">
+          {% for a in announcements %}
+            <div class="announcement-item" style="position:relative;padding-right:80px;">
+              <div class="ann-title">{{ a.title }}</div>
+              <div class="ann-time"><i class="fa fa-clock"></i> {{ a.timestamp|date:"d M Y, H:i" }}</div>
+              <div class="ann-body">{{ a.content }}</div>
+              <!-- Actions -->
+              <div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;">
+                <button class="btn-bika outline" style="padding:4px 9px;font-size:12px;"
+                  onclick="openEditAnnModal({{ a.id }}, '{{ a.title|escapejs }}', '{{ a.content|escapejs }}')">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <form method="post" action="{% url 'wildlife:admin_delete_announcement' a.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-bika danger" style="padding:4px 9px;font-size:12px;"
+                    onclick="return confirm('Delete this announcement?')">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% empty %}
+            <div style="text-align:center;padding:32px;color:var(--text-muted);">
+              <i class="fa fa-bullhorn" style="font-size:28px;display:block;margin-bottom:8px;"></i>
+              No announcements yet.
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════ TAB 2: CLAIMS CRUD ════════════ -->
+<div id="tab-claims" class="tab-pane">
+
+  <div class="page-actions mb-4">
+    <button class="btn-bika" onclick="openCreateModal()">
+      <i class="fa fa-plus"></i> New Claim
+    </button>
+  </div>
+
+  <div class="bika-card">
+    <div class="card-header-bar" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>All Claims</span>
+      <span style="font-size:13px;color:var(--text-muted);font-weight:400;">{{ claims|length }} total</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="bika-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>User</th>
+            <th>Type</th>
+            <th>Details</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for claim in claims %}
+          <tr>
+            <td style="color:var(--text-muted);font-size:12px;">{{ claim.id }}</td>
+            <td style="font-size:13px;">{{ claim.user.email|default:claim.user.username }}</td>
+            <td style="font-size:13px;">{{ claim.claims }}</td>
+            <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;">
+              {{ claim.details }}
+            </td>
+            <td>
+              {% if claim.status == 'approved' %}
+                <span class="badge-approved"><i class="fa fa-check"></i> Approved</span>
+              {% elif claim.status == 'declined' %}
+                <span class="badge-declined"><i class="fa fa-times"></i> Declined</span>
+              {% else %}
+                <span class="badge-pending"><i class="fa fa-clock"></i> Pending</span>
+              {% endif %}
+            </td>
+            <td style="font-size:12px;color:var(--text-muted);">{{ claim.timestamp|date:"d M Y" }}</td>
+            <td>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <!-- Edit -->
+                <button class="btn-bika outline" style="padding:5px 10px;font-size:12px;"
+                  onclick="openEditModal(
+                    {{ claim.id }},
+                    '{{ claim.user.id }}',
+                    '{{ claim.claims|escapejs }}',
+                    '{{ claim.details|escapejs }}',
+                    '{{ claim.status }}'
+                  )">
+                  <i class="fa fa-edit"></i>
+                </button>
+
+                <!-- Approve -->
+                {% if claim.status != 'approved' %}
+                <a href="{% url 'wildlife:approve_claim' claim.id %}"
+                   class="btn-bika" style="padding:5px 10px;font-size:12px;background:#059669;"
+                   onclick="return confirm('Approve this claim?')">
+                  <i class="fa fa-check"></i>
+                </a>
+                {% endif %}
+
+                <!-- Decline -->
+                {% if claim.status != 'declined' %}
+                <a href="{% url 'wildlife:decline_claim' claim.id %}"
+                   class="btn-bika danger" style="padding:5px 10px;font-size:12px;"
+                   onclick="return confirm('Decline this claim?')">
+                  <i class="fa fa-times"></i>
+                </a>
+                {% endif %}
+
+                <!-- Delete -->
+                <form method="post" action="{% url 'wildlife:admin_delete_claim' claim.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-bika danger" style="padding:5px 10px;font-size:12px;"
+                    onclick="return confirm('Permanently delete this claim?')">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
+              <i class="fa fa-folder-open" style="font-size:30px;display:block;margin-bottom:8px;"></i>
+              No claims yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ MODAL: Edit Announcement ════════════ -->
+<div class="bika-modal-overlay" id="editAnnModal">
+  <div class="bika-modal">
+    <button class="modal-close" onclick="closeModal('editAnnModal')">&times;</button>
+    <div class="modal-title"><i class="fa fa-edit" style="color:var(--green-700);margin-right:8px;"></i>Edit Announcement</div>
+    <form id="editAnnForm" method="post" action="">
+      {% csrf_token %}
+      <div style="margin-bottom:14px;">
+        <label class="field-label">Title</label>
+        <input type="text" name="title" id="edit-ann-title" class="field-input" required>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="field-label">Content</label>
+        <textarea name="content" id="edit-ann-content" class="field-input" rows="5" required></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-bika outline" onclick="closeModal('editAnnModal')">Cancel</button>
+        <button type="submit" class="btn-bika"><i class="fa fa-save"></i> Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════ MODAL: Create Claim ════════════ -->
+<div class="bika-modal-overlay" id="createModal">
+  <div class="bika-modal">
+    <button class="modal-close" onclick="closeModal('createModal')">&times;</button>
+    <div class="modal-title"><i class="fa fa-plus-circle" style="color:var(--green-700);margin-right:8px;"></i>New Claim</div>
+    <form method="post" action="{% url 'wildlife:admin_create_claim' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="bika-form-grid">
+        <div class="full">
+          <label class="field-label">Assigned User</label>
+          {{ claim_form.user }}
+        </div>
+        <div class="full">
+          <label class="field-label">Claim Type</label>
+          {{ claim_form.claims }}
+        </div>
+        <div class="full">
+          <label class="field-label">Details</label>
+          {{ claim_form.details }}
+        </div>
+        <div>
+          <label class="field-label">Status</label>
+          {{ claim_form.status }}
+        </div>
+        <div>
+          <label class="field-label">Image (optional)</label>
+          {{ claim_form.claim_image }}
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-bika outline" onclick="closeModal('createModal')">Cancel</button>
+        <button type="submit" class="btn-bika"><i class="fa fa-save"></i> Create Claim</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ════════════ MODAL: Edit Claim ════════════ -->
+<div class="bika-modal-overlay" id="editModal">
+  <div class="bika-modal">
+    <button class="modal-close" onclick="closeModal('editModal')">&times;</button>
+    <div class="modal-title"><i class="fa fa-edit" style="color:var(--green-700);margin-right:8px;"></i>Edit Claim</div>
+    <form id="editClaimForm" method="post" action="" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="bika-form-grid">
+        <div class="full">
+          <label class="field-label">Assigned User</label>
+          <select name="user" id="edit-user" class="field-input">
+            {% for u in claim_form.user.field.queryset %}
+              <option value="{{ u.id }}">{{ u.email|default:u.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="full">
+          <label class="field-label">Claim Type</label>
+          <select name="claims" id="edit-claims" class="field-input">
+            <option value="Damage to property">Damage to property</option>
+            <option value="Damage to crops">Damage to crops</option>
+            <option value="Damage to livestock">Damage to livestock</option>
+            <option value="Human injury">Human injury</option>
+          </select>
+        </div>
+        <div class="full">
+          <label class="field-label">Details</label>
+          <textarea name="details" id="edit-details" class="field-input" rows="3"></textarea>
+        </div>
+        <div class="full">
+          <label class="field-label">Status</label>
+          <select name="status" id="edit-status" class="field-input">
+            <option value="">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="declined">Declined</option>
+          </select>
+        </div>
+        <div class="full">
+          <label class="field-label">Replace Image (optional)</label>
+          <input type="file" name="claim_image" class="field-input" accept="image/*">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-bika outline" onclick="closeModal('editModal')">Cancel</button>
+        <button type="submit" class="btn-bika"><i class="fa fa-save"></i> Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ── Tabs ──────────────────────────────────────────────────────────────────
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── Modals ────────────────────────────────────────────────────────────────
+  function openEditAnnModal(id, title, content) {
+    const form = document.getElementById('editAnnForm');
+    form.action = '/admin_edit_announcement/' + id + '/';
+    document.getElementById('edit-ann-title').value   = title;
+    document.getElementById('edit-ann-content').value = content;
+    document.getElementById('editAnnModal').classList.add('open');
+  }
+
+  function openCreateModal() {
+    document.getElementById('createModal').classList.add('open');
+  }
+
+  function openEditModal(id, userId, claimType, details, status) {
+    const form = document.getElementById('editClaimForm');
+    form.action = '/admin_edit_claim/' + id + '/';
+
+    document.getElementById('edit-user').value   = userId;
+    document.getElementById('edit-claims').value = claimType;
+    document.getElementById('edit-details').value = details;
+    document.getElementById('edit-status').value  = status;
+
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  // Close modal when clicking the overlay background
+  document.querySelectorAll('.bika-modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
+  });
+
+  // If redirected back with a hash or after a claim action, reopen claims tab
+  if (window.location.search.includes('tab=claims') || sessionStorage.getItem('bikaTab') === 'claims') {
+    sessionStorage.removeItem('bikaTab');
+    document.querySelectorAll('.tab-btn')[1].click();
+  }
+
+  // Before submitting delete/approve/decline forms, store which tab to return to
+  document.querySelectorAll('#tab-claims form, #tab-claims a').forEach(el => {
+    el.addEventListener('click', () => sessionStorage.setItem('bikaTab', 'claims'));
+  });
+</script>
+
+{% endblock %}

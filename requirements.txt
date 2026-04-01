@@ -1,0 +1,19 @@
+# Core
+Django==6.0.3
+
+# Authentication
+django-allauth==65.15.0
+social-auth-app-django==5.7.0
+social-auth-core==4.8.5
+
+# Media / Image handling
+Pillow==12.1.1
+
+# Production server
+gunicorn
+
+# Static files serving in production
+whitenoise
+
+# PostgreSQL (recommended over SQLite for hosting)
+psycopg2-binary

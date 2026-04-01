@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block body %}
+<div class="bika-card" style="max-width:600px;">
+  <div class="bika-card-header">Edit Post</div>
+  <div class="bika-card-body">
+    {% if user.is_authenticated %}
+      {% if user.id == posts.user.id %}
+        <form method="POST">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button id="edit_view" class="btn-bika">Save Changes</button>
+        </form>
+      {% else %}
+        <p class="text-muted">You are not authorised to edit this post.</p>
+      {% endif %}
+    {% else %}
+      <p class="text-muted">You must be signed in to edit posts.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'Support';</script>
+
+<div class="row g-4">
+
+  <!-- Left: submit new ticket -->
+  <div class="col-lg-5">
+    <div class="bika-card">
+      <div class="card-header-bar">
+        <i class="fa fa-plus-circle" style="color:var(--green-700);margin-right:8px;"></i>New Support Ticket
+      </div>
+      <div class="card-body-pad">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">
+          Describe your issue and our support team will get back to you as soon as possible.
+        </p>
+        <form method="post">
+          {% csrf_token %}
+          {% for field in form %}
+          <div style="margin-bottom:16px;">
+            <label class="field-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <div style="color:#991b1b;font-size:12px;margin-top:4px;">{{ field.errors.0 }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn-bika" style="width:100%;margin-top:4px;">
+            <i class="fa fa-paper-plane"></i> Submit Ticket
+          </button>
+        </form>
+        {% if messages %}
+          {% for message in messages %}
+            <div class="bika-alert success mt-3">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: my tickets list -->
+  <div class="col-lg-7">
+    <div class="bika-card">
+      <div class="card-header-bar">
+        <i class="fa fa-headset" style="color:var(--green-700);margin-right:8px;"></i>My Tickets
+      </div>
+      {% if user_tickets %}
+      <div style="overflow-x:auto;">
+        <table class="bika-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ticket in user_tickets %}
+            <tr>
+              <td>
+                <div style="font-weight:600;font-size:14px;">{{ ticket.subject }}</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{ ticket.question_description|truncatewords:10 }}</div>
+              </td>
+              <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ ticket.submission_timestamp|date:"d M Y" }}</td>
+              <td>
+                {% if ticket.status == 'fixed' %}
+                  <span class="ticket-badge resolved"><i class="fa fa-check"></i> Resolved</span>
+                {% elif ticket.status == 'assigned' %}
+                  <span class="ticket-badge assigned"><i class="fa fa-user-check"></i> In Progress</span>
+                {% else %}
+                  <span class="ticket-badge pending"><i class="fa fa-clock"></i> Pending</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{% url 'wildlife:client_support_detail' ticket.id %}" class="ticket-action-btn blue">
+                  <i class="fa fa-eye"></i> View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="padding:40px;text-align:center;color:var(--text-muted);">
+        <i class="fa fa-inbox" style="font-size:36px;opacity:.3;display:block;margin-bottom:12px;"></i>
+        No tickets submitted yet.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

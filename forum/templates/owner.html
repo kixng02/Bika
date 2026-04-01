@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block body %}
+<script src="{% static 'index.js' %}"></script>
+{% csrf_token %}
+
+{% if user.is_active %}
+<div class="bika-card mb-4">
+  <div class="bika-card-header">New Post</div>
+  <div class="bika-card-body">
+    <form id="add_post">
+      {% csrf_token %}
+      <textarea id="post" name="post" class="form-control forum-textarea" placeholder="What's on your mind?"></textarea>
+      <input type="submit" class="btn-bika mt-3" value="Post">
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div id="home">
+  {% for posts in page_obj %}
+  <div class="bika-card mb-3 forum-post">
+    <div class="forum-post-header">
+      <a class="forum-post-author" href="{% url 'forum:profile' posts.user.id %}">
+        <i class="fa fa-user-circle"></i> {{ posts.user }}
+      </a>
+      <span class="forum-post-time">{{ posts.timestamp }}</span>
+    </div>
+    <div class="forum-post-body" id="post-{{ posts.id }}">{{ posts.message }}</div>
+
+    {% if user.is_authenticated and posts.user.id == user.id %}
+    <div class="forum-post-actions">
+      <span class="forum-action-link" onclick="edit('{{ posts.id }}')"><i class="fa fa-pen"></i> Edit</span>
+      <button class="btn-danger-sm delete-post" data-post-id="{{ posts.id }}"><i class="fa fa-trash"></i> Delete</button>
+    </div>
+    {% endif %}
+
+    <textarea class="form-control mt-2 mb-2 forum-textarea" id="edit-box-{{ posts.id }}" name="edit-box" style="display:none;"></textarea>
+    <div style="display:none;" id="edit-actions-{{ posts.id }}">
+      <button id="edit-btn-{{ posts.id }}" class="btn-bika btn-sm">Save</button>
+      <button id="delete-btn-{{ posts.id }}" class="btn-danger-sm">Delete</button>
+    </div>
+
+    <div class="forum-post-footer">
+      {% for x in posts.likes.all %}
+        {% if x.id == user.id and forloop.last == False %}
+          <i id="{{ posts.id }}" onclick="like(this.id);" class="fa-solid fa-heart liked"></i>
+        {% endif %}
+        {% if forloop.last %}
+          {% if x.id == user.id %}
+            <i id="{{ posts.id }}" onclick="like(this.id);" class="fa-solid fa-heart liked"></i>
+          {% else %}
+            <i id="{{ posts.id }}" onclick="like(this.id);" class="fa-solid fa-heart"></i>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      {% if not posts.likes.all %}
+        <i id="{{ posts.id }}" onclick="like(this.id);" class="fa-solid fa-heart"></i>
+      {% endif %}
+      <span id="totallikes{{ posts.id }}" class="forum-likes-count">{{ posts.likes.count }}</span>
+    </div>
+  </div>
+  {% empty %}
+  <div class="bika-card p-4 text-center text-muted">No posts yet.</div>
+  {% endfor %}
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="forum-pagination">
+  {% if page_obj.has_previous %}
+    <a href="?page=1" class="page-link-btn">&laquo; First</a>
+    <a href="?page={{ page_obj.previous_page_number }}" class="page-link-btn">Previous</a>
+  {% endif %}
+  <span class="page-current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="page-link-btn">Next</a>
+    <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link-btn">Last &raquo;</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

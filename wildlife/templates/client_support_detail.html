@@ -1,0 +1,82 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'Ticket #{{ ticket.id }}';</script>
+
+<div class="mb-3">
+  <a href="{% url 'wildlife:client_support' %}" style="color:var(--green-700);font-weight:600;font-size:14px;">
+    <i class="fa fa-arrow-left"></i> Back to Support
+  </a>
+</div>
+
+<div class="row g-4">
+
+  <!-- Ticket details -->
+  <div class="col-lg-7">
+    <div class="bika-card">
+      <div class="card-header-bar" style="display:flex;align-items:center;justify-content:space-between;">
+        <span><i class="fa fa-headset" style="color:var(--green-700);margin-right:8px;"></i>Ticket #{{ ticket.id }}</span>
+        {% if ticket.status == 'fixed' %}
+          <span class="ticket-badge resolved"><i class="fa fa-check"></i> Resolved</span>
+        {% elif ticket.status == 'assigned' %}
+          <span class="ticket-badge assigned"><i class="fa fa-user-check"></i> In Progress</span>
+        {% else %}
+          <span class="ticket-badge pending"><i class="fa fa-clock"></i> Pending</span>
+        {% endif %}
+      </div>
+      <div class="card-body-pad">
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Subject</div>
+          <div class="claim-detail-value" style="font-weight:600;">{{ ticket.subject }}</div>
+        </div>
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Submitted</div>
+          <div class="claim-detail-value">{{ ticket.submission_timestamp|date:"d F Y, H:i" }}</div>
+        </div>
+        {% if ticket.support_officer %}
+        <div class="claim-detail-row">
+          <div class="claim-detail-label">Handled by</div>
+          <div class="claim-detail-value">{{ ticket.support_officer.get_full_name|default:ticket.support_officer.username }}</div>
+        </div>
+        {% endif %}
+        <div style="margin-top:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">Your Message</div>
+          <div style="background:var(--green-50);border-radius:10px;padding:16px;font-size:14px;line-height:1.7;border:1px solid var(--green-100);">
+            {{ ticket.question_description }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Response -->
+  <div class="col-lg-5">
+    <div class="bika-card">
+      <div class="card-header-bar">
+        <i class="fa fa-reply" style="color:var(--green-700);margin-right:8px;"></i>Support Response
+      </div>
+      <div class="card-body-pad">
+        {% if ticket.response %}
+          <div style="background:var(--green-50);border-radius:10px;padding:16px;font-size:14px;line-height:1.7;border:1px solid var(--green-100);">
+            {{ ticket.response }}
+          </div>
+          {% if ticket.status == 'fixed' %}
+          <div style="margin-top:16px;padding:12px 16px;background:#d1fae5;border-radius:10px;border:1px solid #6ee7b7;font-size:13px;color:#065f46;font-weight:600;">
+            <i class="fa fa-check-circle"></i> This ticket has been resolved.
+          </div>
+          {% endif %}
+        {% else %}
+          <div style="padding:40px 20px;text-align:center;color:var(--text-muted);">
+            <i class="fa fa-hourglass-half" style="font-size:32px;opacity:.3;display:block;margin-bottom:12px;"></i>
+            <div style="font-size:14px;">No response yet.</div>
+            <div style="font-size:12px;margin-top:6px;">Our team will reply as soon as possible.</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "header.html" %} 
+{% load static %}
+{% block content %}
+
+    <nav class="navbar navbar-light navbar-expand-md bg-info navigation-clean" style="padding: 0px;height: 4em;">
+        <div class="container">
+            <div><a class="navbar-brand" href="#" style="margin-left: 200px;">Ad,im claims view</a></div>
+        </div>
+    </nav>
+    <section style="padding-top: 0px;padding-bottom: 50px;">
+        <div class="container">
+            <div class="row" style="padding-top: 30px;padding-left: 15%;padding-right: 15%;">
+                <div class="col-md-6" style="width: 30%;margin-top: 0px;">
+                    <div id="vertical_buttons" style="margin-top: 0px;"><button class="btn btn-primary" type="button" style="height: 45px;margin-top: 0px;border-radius: 18px;">Button</button><button class="btn btn-primary" type="button" style="height: 45px;margin-top: 2.2em;border-radius: 18px;">Passwords and Security</button></div>
+                </div>
+                <div class="col-md-6" style="width: 70%;">
+                    <div class="row" style="border-radius: 50px;box-shadow: 0px 0px var(--bs-gray);transform: perspective(0px);height: auto;width: 100%;border-style: none;margin-left: 0px;margin-right: 0px;">
+                        <div class="col d-flex d-xxl-flex justify-content-between align-content-around flex-wrap align-items-xxl-end" style="box-shadow: inset 0px 0px var(--bs-gray-700);padding-left: 0px;width: 100%;border-style: none;padding-right: 0px;"><button class="btn btn-info" type="button" style="height: 45px;margin-top: 0px;border-radius: 18px;width: 10em;background: var(--bs-blue);">Sender: John Doe</button><button class="btn btn-info" type="button" style="height: 45px;margin-top: 0px;border-radius: 18px;width: 10em;background: var(--bs-blue);">Date: 7 July 2033&nbsp;</button></div>
+                    </div>
+                    <div class="row" style="padding-top: 10px;border-radius: 50px;box-shadow: 0px 0px var(--bs-gray);transform: perspective(0px);">
+                        <div class="col" style="border-radius: 25px;box-shadow: inset 0px 0px var(--bs-gray-700);border-width: 1px;border-style: solid;padding: 1.5em;margin-top: 1.5em;">
+                            <div style="margin-bottom: 0px;">
+                                <h5>Claim Notes</h5>
+                            </div>
+                            <p>Paragraph nasnam</p>
+                            <h5>Evidence</h5>
+                            <div class="row space-rows">
+                                <div class="col">
+                                    <div class="card cards-shadown cards-hover" data-aos="flip-left" data-aos-duration="950">
+                                        <div class="card-header" style="height: 70px;background: var(--bs-blue);"><span class="space"><a href="#"><i class="fa fa-cloud-download" id="download-icon-1"></i></a></span>
+                                            <div class="cardheader-text">
+                                                <h4 id="heading-card-1">926.00</h4>
+                                            </div>
+                                        </div>
+                                        <div class="card-body" style="height: 50px;">
+                                            <p class="cardbody-sub-text">2 minutes ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card cards-shadown cards-hover" data-aos="slide-right" data-aos-duration="950">
+                                        <div class="card-header" style="height: 70px;background: var(--bs-blue);"><span class="space"><a href="#"><i class="fa fa-cloud-download" id="download-icon-2"></i></a></span>
+                                            <div class="cardheader-text">
+                                                <h4 id="heading-card-2">926.00</h4>
+                                            </div>
+                                        </div>
+                                        <div class="card-body" style="height: 50px;">
+                                            <p class="cardbody-sub-text">2 minutes ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card cards-shadown cards-hover" data-aos="slide-right" data-aos-duration="950">
+                                        <div class="card-header" style="height: 70px;background: var(--bs-blue);"><span class="space"><a href="#"><i class="fa fa-cloud-download" id="download-icon-3"></i></a></span>
+                                            <div class="cardheader-text">
+                                                <h4 id="heading-card-3">926.00</h4>
+                                            </div>
+                                        </div>
+                                        <div class="card-body" style="height: 50px;">
+                                            <p class="cardbody-sub-text">2 minutes ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" style="border-radius: 50px;box-shadow: 0px 0px var(--bs-gray);transform: perspective(0px);height: auto;width: 100%;border-style: none;margin-left: 0px;margin-right: 0px;">
+                                <div class="col d-flex d-xxl-flex justify-content-between align-content-around flex-wrap align-items-xxl-end" style="box-shadow: inset 0px 0px var(--bs-gray-700);padding-left: 0px;width: 100%;border-style: none;padding-right: 0px;"><button class="btn btn-danger" type="button" style="height: 45px;margin-top: 0px;border-radius: 18px;width: 10em;">Decline</button><button class="btn btn-success" type="button" style="height: 45px;margin-top: 0px;border-radius: 18px;width: 10em;">Approve</button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include "footer.html" %}
+</body>
+
+</html>
+{% endblock %}

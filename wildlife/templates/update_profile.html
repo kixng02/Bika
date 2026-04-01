@@ -1,0 +1,93 @@
+{% extends "header.html" %} 
+{% load static %}
+{% block content %}
+    <section style="padding-top: 0px;padding-bottom: 50px;">
+        <div class="container">
+            <div class="row" style="padding-top: 30px;padding-left: 15%;padding-right: 15%;">
+                <form class="d-flex flex-column align-items-center" style="border-radius: 25px;padding-top: 20px;padding-bottom: 20px;border-width: 1px;border-style: solid;" method="post" action="{% url 'wildlife:update_profile' %}">
+                    {% csrf_token %}
+                    <div class="col-md-6" style="width: 30%;margin-top: 10px;">
+                        <div id="vertical_buttons">
+                            <a class="btn btn-danger" href="{% url 'wildlife:logout' %}" style="height: 45px;margin-top: 0px;border-radius: 18px;">Logout</a>
+                            <button class="btn btn-primary" type="button" style="height: 45px;margin-top: 33px;border-radius: 18px;">Passwords and Security</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6" style="width: 70%;">
+                        {% if messages %}
+                            <div class="messages">
+                                {% for message in messages %}
+                                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="row" style="padding-top: 10px;border-radius: 50px;box-shadow: 0px 0px var(--bs-gray);transform: perspective(0px);">
+                            <div class="col" style="border-radius: 25px;box-shadow: inset 0px 0px var(--bs-gray-700);border-width: 1px;border-style: solid;">
+                                <div style="height: 150px;margin-bottom: 0px;"></div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 20px;">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Full Name</label>
+                                    <input class="form-control" type="text" name="full_name" value="{{ user.get_full_name }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input class="form-control" type="text" name="email" value="{{ user.email }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Address</label>
+                                    <input class="form-control" type="text" name="address" value="{{ user.address }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Contact Number</label>
+                                    <input class="form-control" type="text" name="contact_number" value="{{ user.contactNumber }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">City</label>
+                                    <input class="form-control" type="text" name="city" value="{{ user.city }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">ID Number</label>
+                                    <input class="form-control" type="text" name="id_number" value="{{ user.nationalId }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6" style="width: 100%;">
+                                <button class="btn btn-primary" type="submit" style="height: 45px;margin-top: 15px;width: 100%;border-style: solid;border-radius: 18px;">Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <footer class="text-center footer" style="padding-top: 25px;padding-bottom: 25px;">
+        <div class="container">
+            <div class="row"></div>
+        </div>
+    </footer>
+    {% include "footer.html" %}
+</body>
+
+</html>
+{% endblock %}

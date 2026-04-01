@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block body %}
+<script src="{% static 'index.js' %}"></script>
+
+<div class="bika-card mb-4">
+  <div class="forum-profile-header">
+    <div class="forum-profile-avatar"><i class="fa fa-user-circle"></i></div>
+    <div>
+      <h2 class="forum-profile-name">{{ post_owner }}</h2>
+      <div class="forum-profile-stats">
+        <span><strong id="profile-stat-count">{{ user_following }}</strong> Followers</span>
+        <span><strong id="profile-stat-count1">{{ user_followers }}</strong> Following</span>
+      </div>
+    </div>
+    {% if user.id != current_user %}
+      <div class="forum-profile-follow">
+        {% if follows %}
+          <button onclick="follows(this.id);" id="u{{ current_user }}" class="btn-bika">Unfollow</button>
+        {% else %}
+          <button onclick="follows(this.id);" id="f{{ current_user }}" class="btn-bika">Follow</button>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<input type="hidden" name="user" value="{{ current_user }}">
+<input type="hidden" name="follower" value="{{ user.username }}">
+<input type="hidden" name="value" value="follow">
+
+<div id="home">
+  {% for posts in page_obj %}
+  <div class="bika-card mb-3 forum-post">
+    <div class="forum-post-header">
+      <a class="forum-post-author" href="{% url 'forum:profile' posts.user.id %}">
+        <i class="fa fa-user-circle"></i> {{ posts.user }}
+      </a>
+      <span class="forum-post-time">{{ posts.timestamp }}</span>
+    </div>
+    <div class="forum-post-body" id="post-{{ posts.id }}">{{ posts.message }}</div>
+
+    {% if user.is_authenticated and posts.user.id == user.id %}
+    <div class="forum-post-actions">
+      <span class="forum-action-link" onclick="edit('{{ posts.id }}')"><i class="fa fa-pen"></i> Edit</span>
+    </div>
+    {% endif %}
+
+    <textarea class="form-control mt-2 mb-2 forum-textarea" id="edit-box-{{ posts.id }}" name="edit-box" style="display:none;"></textarea>
+    <button id="edit-btn-{{ posts.id }}" class="btn-bika btn-sm" style="display:none;">Save</button>
+
+    <div class="forum-post-footer">
+      {% for x in posts.likes.all %}
+        {% if x.id == user.id and forloop.last == False %}
+          <div id="{{ posts.id }}" onclick="like(this.id);" class="forum-like-btn liked">Unlike</div>
+        {% endif %}
+        {% if forloop.last %}
+          {% if x.id == user.id %}
+            <div id="{{ posts.id }}" onclick="like(this.id);" class="forum-like-btn liked">Unlike</div>
+          {% else %}
+            <div id="{{ posts.id }}" onclick="like(this.id);" class="forum-like-btn">Like</div>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      {% if not posts.likes.all %}
+        <div id="{{ posts.id }}" onclick="like(this.id);" class="forum-like-btn">Like</div>
+      {% endif %}
+      <span id="totallikes{{ posts.id }}" class="forum-likes-count">{{ posts.likes.count }}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="forum-pagination">
+  {% if page_obj.has_previous %}
+    <a href="?page=1" class="page-link-btn">&laquo; First</a>
+    <a href="?page={{ page_obj.previous_page_number }}" class="page-link-btn">Previous</a>
+  {% endif %}
+  <span class="page-current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="page-link-btn">Next</a>
+    <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link-btn">Last &raquo;</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

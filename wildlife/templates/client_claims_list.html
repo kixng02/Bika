@@ -1,0 +1,60 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'My Claims';</script>
+
+<div class="page-actions mb-4">
+  <a href="{% url 'wildlife:client_new_claim' %}" class="btn-bika">
+    <i class="fa fa-plus"></i> New Claim
+  </a>
+</div>
+
+<div class="bika-card">
+  <div class="card-header-bar">Claims History</div>
+  <div style="overflow-x:auto;">
+    <table class="bika-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Details</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user_claim in user_claims %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <a href="{% url 'wildlife:client_claim_detail' user_claim.id %}" style="color:var(--green-700);font-weight:600;">
+                {{ user_claim.details }}
+              </a>
+            </td>
+            <td>{{ user_claim.claims }}</td>
+            <td>
+              {% if user_claim.status == 'approved' %}
+                <span class="badge-approved"><i class="fa fa-check"></i> Approved</span>
+              {% elif user_claim.status == 'declined' %}
+                <span class="badge-declined"><i class="fa fa-times"></i> Declined</span>
+              {% else %}
+                <span class="badge-pending"><i class="fa fa-clock"></i> Pending</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--text-muted);font-size:13px;">{{ user_claim.timestamp|date:"d M Y" }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted);">
+              <i class="fa fa-folder-open" style="font-size:32px;margin-bottom:8px;display:block;"></i>
+              No claims yet. <a href="{% url 'wildlife:client_new_claim' %}" style="color:var(--green-700);">Submit your first claim.</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

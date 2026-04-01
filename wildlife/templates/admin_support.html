@@ -1,0 +1,134 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'Support Tickets';</script>
+
+<!-- Summary bar -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <div class="stat-card">
+      <div class="stat-icon amber"><i class="fa fa-clock"></i></div>
+      <div>
+        <div class="stat-value">{{ all_tickets|length }}</div>
+        <div class="stat-label">Total tickets</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="fa fa-user-check"></i></div>
+      <div>
+        <div class="stat-value">{% with c=0 %}{% for t in all_tickets %}{% if t.status == 'assigned' %}{% with c=c|add:1 %}{% endwith %}{% endif %}{% endfor %}{{ all_tickets|length }}{% endwith %}</div>
+        <div class="stat-label">Assigned</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="fa fa-check-circle"></i></div>
+      <div>
+        <div class="stat-value">{% for t in all_tickets %}{% if t.status == 'fixed' %}✓{% endif %}{% endfor %}</div>
+        <div class="stat-label">Resolved</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filter tabs -->
+<div class="ticket-filter-tabs mb-3">
+  <button class="ticket-tab active" data-filter="all">All</button>
+  <button class="ticket-tab" data-filter="pending">Pending</button>
+  <button class="ticket-tab" data-filter="assigned">Assigned</button>
+  <button class="ticket-tab" data-filter="fixed">Resolved</button>
+</div>
+
+<!-- Tickets table -->
+<div class="bika-card">
+  <div class="card-header-bar">
+    <i class="fa fa-headset" style="color:var(--green-700);margin-right:8px;"></i>All Support Tickets
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="bika-table" id="ticketsTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Subject</th>
+          <th>User</th>
+          <th>Submitted</th>
+          <th>Status</th>
+          <th>Assigned to</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ticket in all_tickets %}
+        <tr class="ticket-row" data-status="{{ ticket.status|default:'pending' }}">
+          <td style="color:var(--text-muted);font-size:13px;">{{ ticket.id }}</td>
+          <td>
+            <a href="{% url 'wildlife:admin_support_detail' ticket.id %}" style="color:var(--green-700);font-weight:600;">
+              {{ ticket.subject }}
+            </a>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{ ticket.question_description|truncatewords:10 }}</div>
+          </td>
+          <td style="font-size:13px;">{{ ticket.user.get_full_name|default:ticket.user.username }}</td>
+          <td style="font-size:12px;color:var(--text-muted);">{{ ticket.submission_timestamp|date:"d M Y, H:i" }}</td>
+          <td>
+            {% if ticket.status == 'fixed' %}
+              <span class="ticket-badge resolved"><i class="fa fa-check"></i> Resolved</span>
+            {% elif ticket.status == 'assigned' %}
+              <span class="ticket-badge assigned"><i class="fa fa-user-check"></i> Assigned</span>
+            {% else %}
+              <span class="ticket-badge pending"><i class="fa fa-clock"></i> Pending</span>
+            {% endif %}
+          </td>
+          <td style="font-size:13px;">
+            {% if ticket.support_officer %}{{ ticket.support_officer.get_full_name|default:ticket.support_officer.username }}{% else %}<span style="color:var(--text-muted);">—</span>{% endif %}
+          </td>
+          <td>
+            <div class="ticket-actions">
+              {% if ticket.status != 'assigned' %}
+              <form method="post" action="{% url 'wildlife:ticket_set_status' ticket.id 'assigned' %}">
+                {% csrf_token %}
+                <button type="submit" class="ticket-action-btn blue" title="Assign to me"><i class="fa fa-user-check"></i> Assign</button>
+              </form>
+              {% endif %}
+              {% if ticket.status != 'fixed' %}
+              <form method="post" action="{% url 'wildlife:ticket_set_status' ticket.id 'fixed' %}">
+                {% csrf_token %}
+                <button type="submit" class="ticket-action-btn green" title="Mark resolved"><i class="fa fa-check"></i> Resolve</button>
+              </form>
+              {% endif %}
+              {% if ticket.status != 'pending' %}
+              <form method="post" action="{% url 'wildlife:ticket_set_status' ticket.id 'pending' %}">
+                {% csrf_token %}
+                <button type="submit" class="ticket-action-btn amber" title="Set pending"><i class="fa fa-clock"></i> Pending</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">No tickets yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// Filter tabs
+document.querySelectorAll('.ticket-tab').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.ticket-tab').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const filter = this.dataset.filter;
+    document.querySelectorAll('.ticket-row').forEach(row => {
+      const status = row.dataset.status || 'pending';
+      row.style.display = (filter === 'all' || status === filter) ? '' : 'none';
+    });
+  });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,399 @@
+{% extends "header.html" %}
+{% load static %}
+{% block content %}
+
+<script>document.getElementById('pageTitle').textContent = 'Dashboard';</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<div id="divToPrint">
+
+  <!-- ── Stat cards row 1 ── -->
+  <div class="row g-3 mb-3">
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fa fa-users"></i></div>
+        <div>
+          <div class="stat-value">{{ total_active_users }}</div>
+          <div class="stat-label">Active users</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon red"><i class="fa fa-user-slash"></i></div>
+        <div>
+          <div class="stat-value">{{ total_blocked_users }}</div>
+          <div class="stat-label">Blocked users</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="fa fa-user-shield"></i></div>
+        <div>
+          <div class="stat-value">{{ total_staff_users }}</div>
+          <div class="stat-label">Staff members</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="fa fa-bullhorn"></i></div>
+        <div>
+          <div class="stat-value">{{ total_announcements }}</div>
+          <div class="stat-label">Announcements</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Stat cards row 2 ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fa fa-file-alt"></i></div>
+        <div>
+          <div class="stat-value">{{ total_claims }}</div>
+          <div class="stat-label">Total claims</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fa fa-check-circle"></i></div>
+        <div>
+          <div class="stat-value">{{ total_approved_claims }}</div>
+          <div class="stat-label">Approved claims</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon red"><i class="fa fa-times-circle"></i></div>
+        <div>
+          <div class="stat-value">{{ total_declined_claims }}</div>
+          <div class="stat-label">Declined claims</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="fa fa-clock"></i></div>
+        <div>
+          <div class="stat-value">{{ total_pending_claims }}</div>
+          <div class="stat-label">Pending claims</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row: Monthly trend + Status donut ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="bika-card h-100">
+        <div class="card-header-bar" style="display:flex;align-items:center;justify-content:space-between;">
+          <span><i class="fa fa-chart-line" style="color:var(--green-700);margin-right:8px;"></i>Claims Trend</span>
+          <select id="trendRange" class="trend-select">
+            <option value="6m" selected>Last 6 Months</option>
+            <option value="3m">Last 3 Months</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+        <div class="card-body-pad" style="position:relative;height:260px;">
+          <canvas id="claimsTrendChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="bika-card h-100">
+        <div class="card-header-bar">
+          <i class="fa fa-chart-pie" style="color:var(--green-700);margin-right:8px;"></i>
+          Claims Status
+        </div>
+        <div class="card-body-pad" style="position:relative;height:260px;display:flex;align-items:center;justify-content:center;">
+          <canvas id="claimsDonutChart" style="max-height:230px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row: Category bar + Gauges ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-6">
+      <div class="bika-card h-100">
+        <div class="card-header-bar">
+          <i class="fa fa-chart-bar" style="color:var(--green-700);margin-right:8px;"></i>
+          Claims by Category
+        </div>
+        <div class="card-body-pad" style="position:relative;height:220px;">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="bika-card h-100 text-center">
+        <div class="card-header-bar"><i class="fa fa-tachometer-alt" style="color:var(--green-700);margin-right:8px;"></i>Approval Rate</div>
+        <div class="card-body-pad" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+          <canvas id="approvalGauge" width="180" height="100"></canvas>
+          <div class="gauge-value" id="approvalPct">–</div>
+          <div style="font-size:12px;color:var(--text-muted);">of total claims</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="bika-card h-100 text-center">
+        <div class="card-header-bar"><i class="fa fa-tachometer-alt" style="color:var(--green-700);margin-right:8px;"></i>Ticket Resolution</div>
+        <div class="card-body-pad" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+          <canvas id="ticketGauge" width="180" height="100"></canvas>
+          <div class="gauge-value" id="ticketPct">–</div>
+          <div style="font-size:12px;color:var(--text-muted);">of tickets resolved</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row: Recent claims table + Tickets card ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="bika-card h-100">
+        <div class="card-header-bar" style="display:flex;justify-content:space-between;align-items:center;">
+          <span><i class="fa fa-list" style="color:var(--green-700);margin-right:8px;"></i>Recent Claims</span>
+          <a href="{% url 'wildlife:admin_claims_list' %}" style="font-size:13px;color:var(--green-700);font-weight:600;">View all →</a>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="bika-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Details</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for claim in recent_claims %}
+              <tr>
+                <td style="color:var(--text-muted);font-size:13px;">{{ claim.id }}</td>
+                <td>
+                  <a href="{% url 'wildlife:admin_claim_detail' claim.id %}" style="color:var(--green-700);font-weight:600;">
+                    {{ claim.details }}
+                  </a>
+                </td>
+                <td style="font-size:13px;">{{ claim.claims }}</td>
+                <td>
+                  {% if claim.status == 'approved' %}
+                    <span class="badge-approved"><i class="fa fa-check"></i> Approved</span>
+                  {% elif claim.status == 'declined' %}
+                    <span class="badge-declined"><i class="fa fa-times"></i> Declined</span>
+                  {% else %}
+                    <span class="badge-pending"><i class="fa fa-clock"></i> Pending</span>
+                  {% endif %}
+                </td>
+                <td style="font-size:12px;color:var(--text-muted);">{{ claim.timestamp|date:"d M Y" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">No claims yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="bika-card h-100">
+        <div class="card-header-bar"><i class="fa fa-headset" style="color:var(--green-700);margin-right:8px;"></i>Support Tickets</div>
+        <div class="card-body-pad">
+          <div class="row g-3 mb-3">
+            <div class="col-4 text-center">
+              <div style="font-size:28px;font-weight:700;color:var(--green-800);">{{ total_tickets }}</div>
+              <div style="font-size:12px;color:var(--text-muted);">Total</div>
+            </div>
+            <div class="col-4 text-center">
+              <div style="font-size:28px;font-weight:700;color:#059669;">{{ total_fixed_tickets }}</div>
+              <div style="font-size:12px;color:var(--text-muted);">Resolved</div>
+            </div>
+            <div class="col-4 text-center">
+              <div style="font-size:28px;font-weight:700;color:#2563eb;">{{ total_tickets_with_support_officers }}</div>
+              <div style="font-size:12px;color:var(--text-muted);">Assigned</div>
+            </div>
+          </div>
+          <div style="position:relative;height:130px;">
+            <canvas id="ticketsDonut"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /divToPrint -->
+
+<div style="display:flex;gap:10px;margin-top:24px;">
+  <button class="btn-bika outline" onclick="printDiv('divToPrint')">
+    <i class="fa fa-print"></i> Print
+  </button>
+  <button class="btn-bika" id="downloadPDF">
+    <i class="fa fa-download"></i> Download PDF
+  </button>
+</div>
+
+<style>
+.gauge-value { font-size:28px; font-weight:700; color:var(--green-800); }
+</style>
+
+<script>
+// ── Data from Django (same source as admin_claims_list) ──
+const trendData = {
+  '6m':  {{ trend_6m|safe }},
+  '3m':  {{ trend_3m|safe }},
+  'all': {{ trend_all|safe }},
+};
+
+const categoryLabels   = {{ category_labels|safe }};
+const categoryTotal    = {{ category_total|safe }};
+const categoryApproved = {{ category_approved|safe }};
+const categoryDeclined = {{ category_declined|safe }};
+
+const totalClaims    = {{ total_claims }};
+const approvedClaims = {{ total_approved_claims }};
+const declinedClaims = {{ total_declined_claims }};
+const pendingClaims  = {{ total_pending_claims }};
+
+const totalTickets  = {{ total_tickets }};
+const fixedTickets  = {{ total_fixed_tickets }};
+const assignedTickets = {{ total_tickets_with_support_officers }};
+const openTickets   = totalTickets - fixedTickets - assignedTickets;
+
+Chart.defaults.font.family = "'Lato', sans-serif";
+Chart.defaults.color = '#5a7a61';
+
+// 1. Claims Trend Line Chart — with dropdown switching
+function makeTrendDatasets(d) {
+  return [
+    { label:'Total',    data:d.total,    borderColor:'#40916c', backgroundColor:'rgba(64,145,108,.1)',  tension:.4, fill:true,  pointRadius:5, pointHoverRadius:7 },
+    { label:'Approved', data:d.approved, borderColor:'#059669', backgroundColor:'rgba(5,150,105,.08)', tension:.4, fill:false, pointRadius:4 },
+    { label:'Declined', data:d.declined, borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.08)', tension:.4, fill:false, pointRadius:4 },
+  ];
+}
+
+const trendChart = new Chart(document.getElementById('claimsTrendChart'), {
+  type: 'line',
+  data: { labels: trendData['6m'].labels, datasets: makeTrendDatasets(trendData['6m']) },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ position:'top' }, tooltip:{ mode:'index', intersect:false } },
+    scales:{
+      y:{ beginAtZero:true, ticks:{ precision:0 }, grid:{ color:'#e8f5e9' } },
+      x:{ grid:{ display:false } }
+    }
+  }
+});
+
+document.getElementById('trendRange').addEventListener('change', function() {
+  const d = trendData[this.value];
+  trendChart.data.labels = d.labels;
+  trendChart.data.datasets = makeTrendDatasets(d);
+  trendChart.update();
+});
+
+// 2. Claims Status Doughnut
+new Chart(document.getElementById('claimsDonutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Approved','Declined','Pending'],
+    datasets:[{
+      data:[approvedClaims, declinedClaims, pendingClaims],
+      backgroundColor:['#40916c','#ef4444','#f59e0b'],
+      borderWidth:2, borderColor:'#fff', hoverOffset:8,
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'68%',
+    plugins:{
+      legend:{ position:'bottom', labels:{ padding:16, boxWidth:12 } },
+      tooltip:{ callbacks:{ label: ctx => {
+        const pct = totalClaims ? Math.round(ctx.parsed/totalClaims*100) : 0;
+        return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+      }}}
+    }
+  }
+});
+
+// 3. Claims by Category Grouped Bar
+new Chart(document.getElementById('categoryChart'), {
+  type: 'bar',
+  data: {
+    labels: categoryLabels,
+    datasets: [
+      { label:'Total',    data:categoryTotal,    backgroundColor:'rgba(64,145,108,.7)',  borderRadius:6 },
+      { label:'Approved', data:categoryApproved, backgroundColor:'rgba(5,150,105,.8)',   borderRadius:6 },
+      { label:'Declined', data:categoryDeclined, backgroundColor:'rgba(239,68,68,.75)',  borderRadius:6 },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ position:'top' }, tooltip:{ mode:'index', intersect:false } },
+    scales:{
+      y:{ beginAtZero:true, ticks:{ precision:0 }, grid:{ color:'#e8f5e9' } },
+      x:{ grid:{ display:false } }
+    }
+  }
+});
+
+// 4. Gauges (semicircle doughnut)
+function drawGauge(id, pct, color) {
+  new Chart(document.getElementById(id), {
+    type:'doughnut',
+    data:{ datasets:[{ data:[pct, 100-pct], backgroundColor:[color,'#e8f5e9'], borderWidth:0, circumference:180, rotation:270 }] },
+    options:{ responsive:false, cutout:'75%', plugins:{ legend:{display:false}, tooltip:{enabled:false} }, animation:{ animateRotate:true, duration:900 } }
+  });
+}
+const approvalPct = totalClaims  ? Math.round(approvedClaims/totalClaims*100) : 0;
+const ticketPct   = totalTickets ? Math.round(fixedTickets/totalTickets*100)  : 0;
+drawGauge('approvalGauge', approvalPct, '#40916c');
+drawGauge('ticketGauge',   ticketPct,   '#2563eb');
+document.getElementById('approvalPct').textContent = approvalPct + '%';
+document.getElementById('ticketPct').textContent   = ticketPct  + '%';
+
+// 5. Tickets breakdown doughnut
+new Chart(document.getElementById('ticketsDonut'), {
+  type:'doughnut',
+  data:{
+    labels:['Resolved','Assigned','Unassigned'],
+    datasets:[{ data:[fixedTickets, assignedTickets, Math.max(0, openTickets)], backgroundColor:['#059669','#3b82f6','#f59e0b'], borderWidth:2, borderColor:'#fff', hoverOffset:6 }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{ legend:{ position:'bottom', labels:{ padding:10, boxWidth:10, font:{size:11} } } }
+  }
+});
+
+// Print
+function printDiv(id) {
+  var c = document.getElementById(id).innerHTML;
+  var orig = document.body.innerHTML;
+  document.body.innerHTML = c;
+  window.print();
+  document.body.innerHTML = orig;
+  location.reload();
+}
+
+// PDF — screenshot via html2canvas then embed in jsPDF
+document.getElementById('downloadPDF').addEventListener('click', function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Generating…';
+
+  const div = document.getElementById('divToPrint');
+  html2canvas(div, { scale: 2, useCORS: true, backgroundColor: '#f0fdf4' }).then(canvas => {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width / 2, canvas.height / 2] });
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+    pdf.save('bika-dashboard.pdf');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa fa-download"></i> Download PDF';
+  });
+});
+</script>
+
+{% endblock %}
